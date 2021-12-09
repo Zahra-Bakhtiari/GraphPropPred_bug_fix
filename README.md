@@ -1,2 +1,2 @@
-# GraphPropPred_bug_fix
-# GraphPropPred_bug_fix: address some import issues and lack detailed errors for ogb.graphproppred
+
+GraphPropPred_bug_fix: address some import issues and lack of detailed logs for ogb.graphproppred
