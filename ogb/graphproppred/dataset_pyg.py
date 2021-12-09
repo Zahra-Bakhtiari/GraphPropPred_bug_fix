@@ -1,29 +1,29 @@
-from torch_geometric.data import InMemoryDataset
+#from torch_geometric.data import InMemoryDataset
 import pandas as pd
 import shutil, os
 import os.path as osp
 import torch
 import numpy as np
 from ogb.utils.url import decide_download, download_url, extract_zip
-from ogb.io.read_graph_pyg import read_graph_pyg
+#from ogb.io.read_graph_pyg import read_graph_pyg
 
 
-class PygGraphPropPredDataset(InMemoryDataset):
+class PygGraphPropPredDataset(object):
     def __init__(self, name, root = 'dataset', transform=None, pre_transform = None, meta_dict = None):
         '''
             - name (str): name of the dataset
             - root (str): root directory to store the dataset folder
             - transform, pre_transform (optional): transform/pre-transform graph objects
 
-            - meta_dict: dictionary that stores all the meta-information about data. Default is None, 
+            - meta_dict: dictionary that stores all the meta-information about data. Default is None,
                     but when something is passed, it uses its information. Useful for debugging for external contributers.
-        ''' 
+        '''
 
         self.name = name ## original name, e.g., ogbg-molhiv
-        
+
         if meta_dict is None:
-            self.dir_name = '_'.join(name.split('-')) 
-            
+            self.dir_name = '_'.join(name.split('-'))
+
             # check if previously-downloaded folder exists.
             # If so, use that one.
             if osp.exists(osp.join(root, self.dir_name + '_pyg')):
@@ -31,7 +31,7 @@ class PygGraphPropPredDataset(InMemoryDataset):
 
             self.original_root = root
             self.root = osp.join(root, self.dir_name)
-            
+
             master = pd.read_csv(os.path.join(os.path.dirname(__file__), 'master.csv'), index_col = 0)
             if not self.name in master:
                 error_mssg = 'Invalid dataset name {}.\n'.format(self.name)
@@ -39,17 +39,17 @@ class PygGraphPropPredDataset(InMemoryDataset):
                 error_mssg += '\n'.join(master.keys())
                 raise ValueError(error_mssg)
             self.meta_info = master[self.name]
-            
+
         else:
             self.dir_name = meta_dict['dir_path']
             self.original_root = ''
             self.root = meta_dict['dir_path']
             self.meta_info = meta_dict
-        
+
         # check version
         # First check whether the dataset has been already downloaded or not.
         # If so, check whether the dataset version is the newest or not.
-        # If the dataset is not the newest version, notify this to the user. 
+        # If the dataset is not the newest version, notify this to the user.
         if osp.isdir(self.root) and (not osp.exists(osp.join(self.root, 'RELEASE_v' + str(self.meta_info['version']) + '.txt'))):
             print(self.name + ' has been updated.')
             if input('Will you update the dataset now? (y/N)\n').lower() == 'y':
@@ -65,12 +65,14 @@ class PygGraphPropPredDataset(InMemoryDataset):
 
         super(PygGraphPropPredDataset, self).__init__(self.root, transform, pre_transform)
 
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        # TODO: The below line causes import issue for "from ogb.graphproppred import PygGraphPropPredDataset"
+        #  and is not being used anywhere else
+        # self.data, self.slices = torch.load(self.processed_paths[0])
 
     def get_idx_split(self, split_type = None):
         if split_type is None:
             split_type = self.meta_info['split']
-            
+
         path = osp.join(self.root, 'split', split_type)
 
         # short-cut if split_dict.pt exists
